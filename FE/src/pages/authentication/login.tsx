@@ -1,22 +1,51 @@
 import "./../../index.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { loginUser } from "../../services/authService";
 
-function login() {
+function Login() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+
+    const result = await loginUser(form.email, form.password);
+    if (result.success) {
+      console.log("✅ Đăng nhập thành công:", result.user);
+      navigate("/"); // hoặc navigate("/dashboard")
+    } else {
+      setError("❌ Sai email hoặc mật khẩu");
+    }
+  };
+
   return (
     <div className=" mx-auto mt-10 p-8">
       <h2 className="text-center text-3xl font-semibold text-[#0D47A1]">
         Đăng nhập
       </h2>
-      <form className=" mt-8">
+      <form onSubmit={handleSubmit} className=" mt-8">
         <div className=" flex flex-col gap-4">
           <input
-            type="text"
-            placeholder="Tên đăng nhập"
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
             className=" p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="password"
+            name="password"
             placeholder="Mật khẩu"
+            value={form.password}
+            onChange={handleChange}
             className=" p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -31,10 +60,9 @@ function login() {
         >
           Đăng nhập
         </button>
-
       </form>
     </div>
   );
 }
 
-export default login;
+export default Login;
