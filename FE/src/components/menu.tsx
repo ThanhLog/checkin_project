@@ -4,52 +4,70 @@ import { useState } from "react";
 
 function Menu() {
   const [isOpen, setIsOpen] = useState(false);
+  // role: ADMIN, ACCOUNTANT
+  const role = localStorage.getItem("role") || "ADMIN";
 
-  const menuItems = [
+  const adminMenu = [
     { name: "Tổng quan", icon: AppIcons.home, link: "/" },
     {
       name: "Báo cáo tài chính & thuế",
       icon: AppIcons.checkList,
-      link: "/checklist",
+      link: "/",
     },
-    { name: "Quản lý nhân sự", icon: AppIcons.users, link: "/users" },
-    { name: "Thông báo quan trọng", icon: AppIcons.notify, link: "/notify" },
+    { name: "Quản lý nhân sự", icon: AppIcons.users, link: "/" },
+    { name: "Thông báo quan trọng", icon: AppIcons.notify, link: "/" },
   ];
 
+  const userMenu = [
+    { name: "Tổng quan", icon: AppIcons.home, link: "/" },
+    { name: "Quản lý tài liệu", icon: AppIcons.document, link: "" },
+    { name: "Tính thuế", icon: AppIcons.caculator, link: "" },
+    { name: "Khai thuế & nộp thuế", icon: AppIcons.payment, link: "" },
+  ];
+
+  // Lấy menu theo role
+  const menuItems = role === "ADMIN" ? adminMenu : userMenu;
+
   return (
-    <div className="w-fit h-screen bg-[#1976D2] text-white flex flex-col">
+    <div
+      className={` w-fit h-screen bg-[#1976D2] text-white flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${
+        isOpen ? "absolute top-0 left-0" : ""
+      }`}
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
       <div className="p-4 text-lg font-bold relative">
         {isOpen ? "SMEs Website" : " "}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="bg-white rounded-full shadow-2xl absolute right-[-10px] top-1/2 transform -translate-y-1/2"
-        >
-          <img
-            src={isOpen ? AppIcons.arrowLeft : AppIcons.arrowRight}
-            alt="Menu"
-            width={30}
-            height={30}
-          />
-        </button>
       </div>
 
       {/* Items menu */}
       <ul className="flex-1 p-2 space-y-2 h-full">
         {menuItems.map((item, index) => (
           <li key={index}>
-            <a
-              href={item.link}
+            <Link
+              to={item.link}
               className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#2196F3] transition-colors font-semibold"
             >
-              <img src={item.icon} alt={item.name} width={30} height={30} />
-              {isOpen && <span className="whitespace-nowrap">{item.name}</span>}
-            </a>
+              <item.icon className=" w-12" />
+
+              <span
+                className={`whitespace-nowrap text-xl transition-all duration-500 ease-in-out ${
+                  isOpen ? "opacity-100 ml-2 block" : "opacity-0 ml-0 hidden"
+                }`}
+              >
+                {item.name}
+              </span>
+            </Link>
           </li>
         ))}
       </ul>
-      <Link to="" className="flex gap-3 p-3 font-semibold">
-        <img src={AppIcons.settings} alt="" width={30} height={30} />{" "}
-        {isOpen && <span className="whitespace-nowrap">Cài đặt</span>}
+
+      <Link
+        to="/settings"
+        className="flex gap-3 p-3 font-semibold items-center"
+      >
+        <AppIcons.settings className="w-12 h-12" />
+        {isOpen && <span className="whitespace-nowrap text-2xl">Cài đặt</span>}
       </Link>
     </div>
   );
