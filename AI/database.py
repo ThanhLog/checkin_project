@@ -29,11 +29,7 @@ class MongoDB:
 mongodb = MongoDB()
 db = mongodb.connect()
 users_collection = db["User"]
-
-
 hotel_bookings_collection = db["HotelBooking"]
-
-# Collection mới cho Medical Appointment
 medical_appointments_collection = db["MedicalAppointment"]
 
 # Tạo indexes để tối ưu hóa

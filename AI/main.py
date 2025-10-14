@@ -9,6 +9,7 @@ import os
 import re
 import numpy as np
 
+from helpers import doc_helper
 from models import (
     UserCreate, UserResponse, SystemInfo, 
     Address, PersonalInfo, Identification, 
@@ -18,7 +19,7 @@ from models import (
     MedicalAppointmentCreate, MedicalAppointmentResponse, MedicalAppointment
     
 )
-from database import users_collection
+from database import users_collection, hotel_bookings_collection, medical_appointments_collection
 from face_recognition_service import FaceRecognitionService
 
 # --- FastAPI app ---
@@ -59,9 +60,12 @@ async def root():
 @app.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_id: str = Form(...),
+    cccd: str = Form(""),
     full_name: str = Form(...),
     date_of_birth: str = Form(""),
     gender: str = Form(""),
+    email: str = Form(""),
+    tel: str = Form(""),  
     # Address fields
     street: str = Form(""),
     ward: str = Form(""),
@@ -71,8 +75,9 @@ async def create_user(
     id_number: str = Form(""),
     issue_date: Optional[str] = Form(None),
     issue_place: str = Form(""),
+    regis_tration_date: str = Form(""),
     # Face data fields
-    face_image: UploadFile = File(...),  # BẮT BUỘC phải có ảnh
+    face_image: UploadFile = File(...),
     embedding_version: str = Form("1.0"),
     # System info
     status_user: str = Form("active"),
@@ -162,6 +167,8 @@ async def create_user(
         personal_info = PersonalInfo(
             full_name=full_name,
             date_of_birth=date_of_birth,
+            tel = tel,
+            email = email,
             gender=gender,
             address=address
         )

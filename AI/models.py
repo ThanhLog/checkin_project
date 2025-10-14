@@ -37,6 +37,8 @@ class Address(BaseModel):
 
 class PersonalInfo(BaseModel):
     full_name: str
+    tel: str = ""
+    email: str = ""
     date_of_birth: Optional[str] = ""
     gender: Optional[str] = ""
     address: Optional[Address] = Address()
