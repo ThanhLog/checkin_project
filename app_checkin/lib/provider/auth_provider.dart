@@ -17,14 +17,6 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  String? _fcmToken;
-  String? get fcmToken => _fcmToken;
-
-  void setFcmToken(String? token) {
-    _fcmToken = token;
-    notifyListeners();
-  }
-
   void setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -45,18 +37,19 @@ class AuthProvider extends ChangeNotifier {
     clearError();
 
     try {
-      print("Fcm Token Provider: $_fcmToken");
-      final res = await _repository.faceLogin(faceImage, _fcmToken!);
+      final res = await _repository.faceLogin(faceImage);
 
       if (res['success'] == true && res['user'] != null) {
         final user = UserModel.fromJson(res['user']);
         userData = user;
+        print("User Print Login Provider: ${userData!.toJson()}");
 
         await _storage.saveData('user', jsonEncode(user.toJson()));
       } else {
         throw Exception(res['message'] ?? "Đăng nhập không thành công");
       }
     } catch (e) {
+      print(e.toString());
       setError(e.toString());
     } finally {
       setLoading(false);
@@ -76,7 +69,6 @@ class AuthProvider extends ChangeNotifier {
     try {
       final data = await _repository.registerUser(
         userId: userId,
-        fcmToken: _fcmToken,
         fullName: fullName,
         email: email,
         tel: tel,
@@ -98,6 +90,9 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final updatedUser = await _repository.updateUser(newUser);
+      print("Response User Update: ${updatedUser.toJson()}");
+      // Lưu lại vào SecureStorage
+
       await _storage.updateData('user', jsonEncode(updatedUser.toJson()));
     } catch (e) {
       _errorMessage = e.toString();

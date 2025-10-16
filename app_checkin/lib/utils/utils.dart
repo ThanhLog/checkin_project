@@ -32,9 +32,8 @@ class Utils {
     try {
       // Chuyển String dd/MM/yyyy thành DateTime
       final parts = dateText.split('/');
-      if (parts.length != 3) {
+      if (parts.length != 3)
         return dateText; // trả về nguyên bản nếu không hợp lệ
-      }
 
       final day = int.parse(parts[0]);
       final month = int.parse(parts[1]);

@@ -69,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await authProvider.faceLogin(File(image.path));
 
       if (authProvider.userData != null) {
+        print("User Data: ${authProvider.userData!.toJson()}");
         Navigator.pushNamedAndRemoveUntil(
           // ignore: use_build_context_synchronously
           context,
@@ -85,7 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text("Lỗi đăng nhập khuôn mặt: $e")));
     }

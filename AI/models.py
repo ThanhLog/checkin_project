@@ -74,7 +74,6 @@ class CheckinSettings(BaseModel):
 # Model cho request tạo user
 class UserCreate(BaseModel):
     user_id: str
-    fcm_token: str
     personal_info: Optional[PersonalInfo] = PersonalInfo(full_name="")
     identification: Optional[Identification] = Identification()
     face_data: Optional[FaceData] = FaceData()
@@ -86,7 +85,6 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: str
-    fcm_token: str
     personal_info: PersonalInfo
     identification: Identification
     face_data: FaceData

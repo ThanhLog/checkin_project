@@ -7,17 +7,13 @@ import '../base/base_http.dart';
 class AuthRepository {
   final BaseHttp _http = BaseHttp();
 
-  Future<Map<String, dynamic>> faceLogin(
-    File faceImage,
-    String fcmToken,
-  ) async {
+  Future<Map<String, dynamic>> faceLogin(File faceImage) async {
     try {
       final formData = FormData.fromMap({
         'face_image': await MultipartFile.fromFile(
           faceImage.path,
           filename: 'login_face.png',
         ),
-        'fcm_token': fcmToken,
       });
 
       final response = await _http.request(
@@ -39,7 +35,6 @@ class AuthRepository {
 
   Future<UserModel> registerUser({
     required String userId,
-    required String? fcmToken,
     required String fullName,
     required String email,
     required String tel,
@@ -58,14 +53,11 @@ class AuthRepository {
 
       final formData = FormData.fromMap({
         'user_id': userId,
-        'fcm_token': fcmToken,
         'full_name': fullName,
         'email': email,
         'tel': tel,
         'face_image': files.first,
       });
-
-      print("Form Data: $formData");
 
       final response = await _http.request(
         path: ApiUrl.createUser,
