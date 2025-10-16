@@ -166,4 +166,3 @@ flutter run
 ## 📬 Liên hệ
 
 Nhóm 18: Nguyễn Duy Đạt - Lê Thành Long \
-Email: long66yy@gmail.com
