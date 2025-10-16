@@ -105,6 +105,7 @@ class FaceData {
               ?.map((e) => e.toString())
               .toList() ??
           [],
+
     );
   }
 
@@ -156,7 +157,6 @@ class FaceImage {
 class UserModel {
   final String id;
   final String userId;
-  final String? fcmToken;
   final PersonalInfo personalInfo;
   final Identification identification;
   final FaceData faceData;
@@ -165,7 +165,6 @@ class UserModel {
   UserModel({
     required this.id,
     required this.userId,
-    this.fcmToken,
     PersonalInfo? personalInfo,
     Identification? identification,
     FaceData? faceData,
@@ -179,7 +178,6 @@ class UserModel {
     return UserModel(
       id: json['_id'] ?? '',
       userId: json['user_id'] ?? '',
-      fcmToken: json['fcm_token'] ?? '',
       personalInfo: PersonalInfo.fromJson(json['personal_info'] ?? {}),
       identification: Identification.fromJson(json['identification'] ?? {}),
       faceData: FaceData.fromJson(json['face_data'] ?? {}),
@@ -193,7 +191,6 @@ class UserModel {
     return {
       '_id': id,
       'user_id': userId,
-      'fcm_token': fcmToken,
       'personal_info': personalInfo.toJson(),
       'identification': identification.toJson(),
       'face_data': faceData.toJson(),

@@ -92,6 +92,8 @@ class _EditProfileState extends State<EditProfile> {
 
   @override
   Widget build(BuildContext context) {
+    print("Face Data: ${widget.user.faceData.toJson()}");
+    print("Images: ${widget.user.images.length}");
     return Scaffold(
       appBar: AppBar(
         title: const Text("Chỉnh sửa hồ sơ"),
@@ -210,6 +212,7 @@ class _EditProfileState extends State<EditProfile> {
                   faceData: widget.user.faceData,
                 );
 
+                print("User Update: ${updatedUser.toJson()}");
                 await userProvider.updateUser(updatedUser);
 
                 if (userProvider.errorMessage != null) {
