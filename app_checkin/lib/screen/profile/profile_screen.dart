@@ -106,7 +106,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _itemProfile(BuildContext context, UserModel userInfo) {
-    print("UserInfo: ${userInfo.toJson()}");
     return Container(
       padding: EdgeInsets.all(16),
       width: double.infinity,
