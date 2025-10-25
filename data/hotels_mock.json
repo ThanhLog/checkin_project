@@ -1,0 +1,732 @@
+[
+  {
+    "id": "APPT-2001",
+    "name": "Khách sạn Hoa Sen",
+    "password": "654321",
+    "address": "12 Nguyễn Du, Quận 1, TP. Hồ Chí Minh",
+    "phone": "02838381234",
+    "email": "contact@hoasenhotel.vn",
+    "star_rating": 4,
+    "rooms": [
+      {
+        "room_number": "101",
+        "room_type": "Standard",
+        "floor": 1,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 500000,
+        "available": true
+      },
+      {
+        "room_number": "102",
+        "room_type": "Deluxe",
+        "floor": 1,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 750000,
+        "available": false
+      },
+      {
+        "room_number": "103",
+        "room_type": "Suite",
+        "floor": 1,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1200000,
+        "available": true
+      },
+      {
+        "room_number": "201",
+        "room_type": "Standard",
+        "floor": 2,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 520000,
+        "available": true
+      },
+      {
+        "room_number": "202",
+        "room_type": "Deluxe",
+        "floor": 2,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 780000,
+        "available": true
+      },
+      {
+        "room_number": "203",
+        "room_type": "Executive Suite",
+        "floor": 2,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1500000,
+        "available": true
+      },
+      {
+        "room_number": "301",
+        "room_type": "Standard",
+        "floor": 3,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 530000,
+        "available": true
+      },
+      {
+        "room_number": "302",
+        "room_type": "Deluxe",
+        "floor": 3,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 780000,
+        "available": false
+      },
+      {
+        "room_number": "303",
+        "room_type": "Suite City View",
+        "floor": 3,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1350000,
+        "available": true
+      },
+      {
+        "room_number": "304",
+        "room_type": "Superior",
+        "floor": 3,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 650000,
+        "available": true
+      },
+      {
+        "room_number": "401",
+        "room_type": "Standard",
+        "floor": 4,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 540000,
+        "available": true
+      },
+      {
+        "room_number": "402",
+        "room_type": "Deluxe Sea View",
+        "floor": 4,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 880000,
+        "available": true
+      },
+      {
+        "room_number": "403",
+        "room_type": "Family Room",
+        "floor": 4,
+        "bed_type": "2 Queen",
+        "max_guests": 5,
+        "price_per_night": 1100000,
+        "available": true
+      },
+      {
+        "room_number": "404",
+        "room_type": "Executive Suite",
+        "floor": 4,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1600000,
+        "available": false
+      },
+      {
+        "room_number": "501",
+        "room_type": "Standard",
+        "floor": 5,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 550000,
+        "available": true
+      },
+      {
+        "room_number": "502",
+        "room_type": "Deluxe",
+        "floor": 5,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 820000,
+        "available": true
+      },
+      {
+        "room_number": "503",
+        "room_type": "Presidential Suite",
+        "floor": 5,
+        "bed_type": "King",
+        "max_guests": 6,
+        "price_per_night": 2500000,
+        "available": true
+      }
+    ],
+    "active": true,
+    "created_at": "2025-10-21T00:00:00Z",
+    "updated_at": "2025-10-21T00:00:00Z"
+  },
+  {
+    "id": "APPT-2002",
+    "name": "Khách sạn Biển Xanh",
+    "password": "123456",
+    "address": "25 Trần Phú, Phường Lộc Thọ, TP. Nha Trang",
+    "phone": "02583881234",
+    "email": "info@bienxanhhotel.vn",
+    "star_rating": 5,
+    "location": {
+      "latitude": 12.238791,
+      "longitude": 109.196749
+    },
+    "description": "Khách sạn Biển Xanh là khách sạn 5 sao nằm ven biển Nha Trang, với tầm nhìn hướng biển tuyệt đẹp, dịch vụ cao cấp và phòng ốc hiện đại. Là lựa chọn lý tưởng cho kỳ nghỉ dưỡng hoặc công tác.",
+    "amenities": [
+      "Wifi miễn phí",
+      "Bãi đậu xe riêng",
+      "Hồ bơi vô cực",
+      "Phòng gym & yoga",
+      "Spa & massage",
+      "Nhà hàng buffet & bar tầng thượng",
+      "Phòng hội nghị",
+      "Dịch vụ đưa đón sân bay",
+      "Lễ tân 24/7"
+    ],
+    "rooms": [
+      {
+        "room_number": "101",
+        "room_type": "Standard",
+        "floor": 1,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 650000,
+        "available": true
+      },
+      {
+        "room_number": "102",
+        "room_type": "Deluxe Garden View",
+        "floor": 1,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 850000,
+        "available": true
+      },
+      {
+        "room_number": "103",
+        "room_type": "Suite",
+        "floor": 1,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1250000,
+        "available": false
+      },
+      {
+        "room_number": "201",
+        "room_type": "Standard",
+        "floor": 2,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 670000,
+        "available": true
+      },
+      {
+        "room_number": "202",
+        "room_type": "Deluxe Sea View",
+        "floor": 2,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 950000,
+        "available": true
+      },
+      {
+        "room_number": "203",
+        "room_type": "Family Room",
+        "floor": 2,
+        "bed_type": "2 Queen",
+        "max_guests": 5,
+        "price_per_night": 1200000,
+        "available": true
+      },
+      {
+        "room_number": "301",
+        "room_type": "Standard",
+        "floor": 3,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 700000,
+        "available": false
+      },
+      {
+        "room_number": "302",
+        "room_type": "Deluxe Sea View",
+        "floor": 3,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 970000,
+        "available": true
+      },
+      {
+        "room_number": "303",
+        "room_type": "Suite Ocean View",
+        "floor": 3,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1400000,
+        "available": true
+      },
+      {
+        "room_number": "401",
+        "room_type": "Standard",
+        "floor": 4,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 720000,
+        "available": true
+      },
+      {
+        "room_number": "402",
+        "room_type": "Deluxe Sea View",
+        "floor": 4,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 990000,
+        "available": true
+      },
+      {
+        "room_number": "403",
+        "room_type": "Executive Suite",
+        "floor": 4,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1600000,
+        "available": true
+      },
+      {
+        "room_number": "501",
+        "room_type": "Standard",
+        "floor": 5,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 730000,
+        "available": true
+      },
+      {
+        "room_number": "502",
+        "room_type": "Deluxe Sea View",
+        "floor": 5,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 1020000,
+        "available": false
+      },
+      {
+        "room_number": "503",
+        "room_type": "Suite",
+        "floor": 5,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1450000,
+        "available": true
+      },
+      {
+        "room_number": "601",
+        "room_type": "Standard",
+        "floor": 6,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 740000,
+        "available": true
+      },
+      {
+        "room_number": "602",
+        "room_type": "Deluxe Sea View",
+        "floor": 6,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 1050000,
+        "available": true
+      },
+      {
+        "room_number": "603",
+        "room_type": "Suite Ocean View",
+        "floor": 6,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1550000,
+        "available": true
+      },
+      {
+        "room_number": "701",
+        "room_type": "Standard",
+        "floor": 7,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 750000,
+        "available": true
+      },
+      {
+        "room_number": "702",
+        "room_type": "Deluxe Balcony",
+        "floor": 7,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 1080000,
+        "available": true
+      },
+      {
+        "room_number": "703",
+        "room_type": "Executive Suite",
+        "floor": 7,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1650000,
+        "available": true
+      },
+      {
+        "room_number": "801",
+        "room_type": "Standard",
+        "floor": 8,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 760000,
+        "available": true
+      },
+      {
+        "room_number": "802",
+        "room_type": "Deluxe Balcony",
+        "floor": 8,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 1100000,
+        "available": true
+      },
+      {
+        "room_number": "803",
+        "room_type": "Suite Sea View",
+        "floor": 8,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1700000,
+        "available": true
+      },
+      {
+        "room_number": "901",
+        "room_type": "Standard",
+        "floor": 9,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 780000,
+        "available": true
+      },
+      {
+        "room_number": "902",
+        "room_type": "Deluxe Sea View",
+        "floor": 9,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 1150000,
+        "available": false
+      },
+      {
+        "room_number": "903",
+        "room_type": "Presidential Suite",
+        "floor": 9,
+        "bed_type": "King",
+        "max_guests": 6,
+        "price_per_night": 2800000,
+        "available": true
+      },
+      {
+        "room_number": "1001",
+        "room_type": "Penthouse Sky View",
+        "floor": 10,
+        "bed_type": "King",
+        "max_guests": 6,
+        "price_per_night": 3500000,
+        "available": true
+      },
+      {
+        "room_number": "1002",
+        "room_type": "Penthouse Family Suite",
+        "floor": 10,
+        "bed_type": "2 King",
+        "max_guests": 8,
+        "price_per_night": 4200000,
+        "available": false
+      }
+    ]
+  },
+  {
+    "id": "APPT-2003",
+    "name": "Khách sạn Núi Rừng",
+    "password": "112233",
+    "address": "99 Hoàng Hoa Thám, Đà Lạt",
+    "phone": "02633883344",
+    "email": "contact@nuirunghotel.vn",
+    "star_rating": 3,
+    "rooms": [
+      {
+        "room_number": "101",
+        "room_type": "Standard",
+        "floor": 1,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 400000,
+        "available": true
+      },
+      {
+        "room_number": "102",
+        "room_type": "Deluxe Garden View",
+        "floor": 1,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 550000,
+        "available": true
+      },
+      {
+        "room_number": "103",
+        "room_type": "Family Room",
+        "floor": 1,
+        "bed_type": "2 Double",
+        "max_guests": 4,
+        "price_per_night": 700000,
+        "available": false
+      },
+      {
+        "room_number": "201",
+        "room_type": "Standard",
+        "floor": 2,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 420000,
+        "available": true
+      },
+      {
+        "room_number": "202",
+        "room_type": "Deluxe",
+        "floor": 2,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 600000,
+        "available": true
+      },
+      {
+        "room_number": "203",
+        "room_type": "Suite",
+        "floor": 2,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 850000,
+        "available": false
+      },
+      {
+        "room_number": "301",
+        "room_type": "Standard",
+        "floor": 3,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 430000,
+        "available": true
+      },
+      {
+        "room_number": "302",
+        "room_type": "Deluxe Balcony",
+        "floor": 3,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 620000,
+        "available": true
+      },
+      {
+        "room_number": "303",
+        "room_type": "Family Room",
+        "floor": 3,
+        "bed_type": "2 Queen",
+        "max_guests": 5,
+        "price_per_night": 780000,
+        "available": true
+      },
+      {
+        "room_number": "401",
+        "room_type": "Standard",
+        "floor": 4,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 440000,
+        "available": true
+      },
+      {
+        "room_number": "402",
+        "room_type": "Deluxe Garden View",
+        "floor": 4,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 640000,
+        "available": false
+      },
+      {
+        "room_number": "403",
+        "room_type": "Suite",
+        "floor": 4,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 900000,
+        "available": true
+      },
+      {
+        "room_number": "501",
+        "room_type": "Standard",
+        "floor": 5,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 450000,
+        "available": true
+      },
+      {
+        "room_number": "502",
+        "room_type": "Deluxe Balcony",
+        "floor": 5,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 660000,
+        "available": true
+      },
+      {
+        "room_number": "503",
+        "room_type": "Family Room",
+        "floor": 5,
+        "bed_type": "2 Queen",
+        "max_guests": 5,
+        "price_per_night": 820000,
+        "available": false
+      },
+      {
+        "room_number": "601",
+        "room_type": "Standard",
+        "floor": 6,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 460000,
+        "available": true
+      },
+      {
+        "room_number": "602",
+        "room_type": "Deluxe Garden View",
+        "floor": 6,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 670000,
+        "available": true
+      },
+      {
+        "room_number": "603",
+        "room_type": "Suite",
+        "floor": 6,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 950000,
+        "available": true
+      },
+      {
+        "room_number": "701",
+        "room_type": "Standard",
+        "floor": 7,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 470000,
+        "available": true
+      },
+      {
+        "room_number": "702",
+        "room_type": "Deluxe Balcony",
+        "floor": 7,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 680000,
+        "available": true
+      },
+      {
+        "room_number": "703",
+        "room_type": "Family Room",
+        "floor": 7,
+        "bed_type": "2 Queen",
+        "max_guests": 5,
+        "price_per_night": 850000,
+        "available": true
+      },
+      {
+        "room_number": "801",
+        "room_type": "Standard",
+        "floor": 8,
+        "bed_type": "Twin",
+        "max_guests": 2,
+        "price_per_night": 480000,
+        "available": true
+      },
+      {
+        "room_number": "802",
+        "room_type": "Deluxe Garden View",
+        "floor": 8,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 700000,
+        "available": false
+      },
+      {
+        "room_number": "803",
+        "room_type": "Suite Balcony View",
+        "floor": 8,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 980000,
+        "available": true
+      },
+      {
+        "room_number": "901",
+        "room_type": "Standard",
+        "floor": 9,
+        "bed_type": "Double",
+        "max_guests": 2,
+        "price_per_night": 490000,
+        "available": true
+      },
+      {
+        "room_number": "902",
+        "room_type": "Deluxe Balcony",
+        "floor": 9,
+        "bed_type": "Queen",
+        "max_guests": 3,
+        "price_per_night": 720000,
+        "available": true
+      },
+      {
+        "room_number": "903",
+        "room_type": "Family Room",
+        "floor": 9,
+        "bed_type": "2 Queen",
+        "max_guests": 5,
+        "price_per_night": 880000,
+        "available": true
+      },
+      {
+        "room_number": "1001",
+        "room_type": "Penthouse Mountain View",
+        "floor": 10,
+        "bed_type": "King",
+        "max_guests": 4,
+        "price_per_night": 1500000,
+        "available": true
+      },
+      {
+        "room_number": "1002",
+        "room_type": "Penthouse Family Suite",
+        "floor": 10,
+        "bed_type": "2 King",
+        "max_guests": 6,
+        "price_per_night": 1800000,
+        "available": false
+      }
+    ],
+    "active": true,
+    "created_at": "2025-10-21T00:00:00Z",
+    "updated_at": "2025-10-21T00:00:00Z"
+  }
+]

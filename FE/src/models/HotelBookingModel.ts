@@ -11,6 +11,7 @@ export interface HotelBookingModel {
   _id: string;
   booking_id: string;
   user_id: string;
+  hotel_id: string;
   hotel_name: string;
   room_info: RoomInfo;
   check_in_date: string; // ISO string
@@ -18,6 +19,7 @@ export interface HotelBookingModel {
   actual_check_in?: string; // optional
   actual_check_out?: string; // optional
   status: string;
+  check_in_method?: string;
   payment_status: string;
   total_amount: number;
   check_in_face_verified: boolean;

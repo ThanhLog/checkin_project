@@ -30,7 +30,9 @@ mongodb = MongoDB()
 db = mongodb.connect()
 users_collection = db["User"]
 hotel_bookings_collection = db["HotelBooking"]
+hotels_collection = db["Hotels"]
 medical_appointments_collection = db["MedicalAppointment"]
+hospitals_collection = db["Hospitals"]
 
 # Tạo indexes để tối ưu hóa
 def create_indexes():

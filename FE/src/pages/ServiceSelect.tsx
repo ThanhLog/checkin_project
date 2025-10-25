@@ -36,13 +36,17 @@ const services = [
 const ServiceSelect = () => {
   const navigate = useNavigate();
 
+  const routes: Record<string, string> = {
+    hotel: "/login/hotel",
+    hospital: "/login/hospital",
+  };
+
   const handleSelect = (serviceId: string) => {
-    // 🔗 Nếu là fake service thì chỉ cảnh báo tạm thời
-    if (!["hotel", "hospital"].includes(serviceId)) {
+    if (routes[serviceId]) {
+      navigate(routes[serviceId]);
+    } else {
       alert("🚧 Dịch vụ này đang được phát triển!");
-      return;
     }
-    navigate(`/checkin/${serviceId}`);
   };
 
   return (

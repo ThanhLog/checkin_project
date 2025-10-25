@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException, status, File, UploadFile, Form
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, status, File, UploadFile, Form # type: ignore
+from fastapi.middleware.cors import CORSMiddleware # type: ignore
+from fastapi.responses import FileResponse # type: ignore
 from typing import List, Optional
 from bson import ObjectId
 from datetime import datetime
@@ -8,18 +8,20 @@ import shutil
 import os
 import re
 import numpy as np
+from send_fcm import send_fcm
 
 from helpers import doc_helper
 from models import (
     UserCreate, UserResponse, SystemInfo, 
     Address, PersonalInfo, Identification, 
     FaceData, Image, CheckinSettings,
-    HotelBookingCreate, HotelBookingResponse, HotelBooking,
+    # Hotel models
+    Hotel ,HotelBookingCreate, HotelBookingResponse, HotelBooking,
     # Medical models
-    MedicalAppointmentCreate, MedicalAppointmentResponse, MedicalAppointment
+    Hospital ,MedicalAppointmentCreate, MedicalAppointmentResponse, MedicalAppointment
     
 )
-from database import users_collection, hotel_bookings_collection, medical_appointments_collection
+from database import users_collection, hotel_bookings_collection, medical_appointments_collection, hospitals_collection, hotels_collection
 from face_recognition_service import FaceRecognitionService
 
 # --- FastAPI app ---
@@ -62,6 +64,7 @@ async def create_user(
     user_id: str = Form(...),
     cccd: str = Form(""),
     full_name: str = Form(...),
+    fcm_token: str = Form(""),
     date_of_birth: str = Form(""),
     gender: str = Form(""),
     email: str = Form(""),
@@ -192,7 +195,7 @@ async def create_user(
             embeddings=embeddings,  # Embeddings thực từ face_recognition
             face_image_url=face_image_url,
             embedding_version=embedding_version,
-            created_at=datetime.utcnow()
+            created_at=datetime.now()
         )
 
         # Tạo danh sách images
@@ -201,7 +204,7 @@ async def create_user(
             image_obj = Image(
                 image_url=face_image_url,
                 image_type="face",
-                uploaded_at=datetime.utcnow(),
+                uploaded_at=datetime.now(),
                 file_size=file_size,
                 file_format=file_format
             )
@@ -209,8 +212,8 @@ async def create_user(
 
         # Tạo đối tượng SystemInfo
         system_info = SystemInfo(
-            registration_date=datetime.utcnow(),
-            last_updated=datetime.utcnow(),
+            registration_date=datetime.now(),
+            last_updated=datetime.now(),
             status=status_user,
             is_verified=is_verified
         )
@@ -222,6 +225,7 @@ async def create_user(
         user_data = UserCreate(
             user_id=user_id,
             personal_info=personal_info,
+            fcm_token=fcm_token,
             identification=identification,
             face_data=face_data,
             images=images,
@@ -261,7 +265,7 @@ async def create_user_from_json(user_data: UserCreate):
             )
         
         # Cập nhật thời gian hệ thống
-        current_time = datetime.utcnow()
+        current_time = datetime.now()
         if user_data.system_info:
             user_data.system_info.registration_date = current_time
             user_data.system_info.last_updated = current_time
@@ -289,7 +293,10 @@ async def create_user_from_json(user_data: UserCreate):
 
 # --- FACE RECOGNITION: Login bằng khuôn mặt ---
 @app.post("/auth/face-login")
-async def face_login(face_image: UploadFile = File(...)):
+async def face_login(
+    face_image: UploadFile = File(...),
+    fcm_token: Optional[str] = Form(None)
+):
     """
     Đăng nhập bằng khuôn mặt
     - Upload ảnh khuôn mặt
@@ -301,7 +308,7 @@ async def face_login(face_image: UploadFile = File(...)):
         image_content = await face_image.read()
         
         # Lưu ảnh tạm
-        temp_filename = f"temp_login_{datetime.utcnow().timestamp()}.jpg"
+        temp_filename = f"temp_login_{datetime.now().timestamp()}.jpg"
         temp_path = os.path.join(FACE_IMAGE_DIR, temp_filename)
         
         with open(temp_path, "wb") as buffer:
@@ -351,10 +358,16 @@ async def face_login(face_image: UploadFile = File(...)):
             
             # Kiểm tra ngưỡng
             if best_match and best_distance <= threshold:
-                # Cập nhật last login time
+                # Cập nhật last login time + fcm token
+                update_fields = {
+                    "system_info.last_login": datetime.now(),
+                }
+                if fcm_token:
+                    update_fields["fcm_token"] = fcm_token
+
                 users_collection.update_one(
                     {"_id": best_match["_id"]},
-                    {"$set": {"system_info.last_login": datetime.utcnow()}}
+                    {"$set": update_fields}
                 )
                 
                 # Tính confidence (0-100%)
@@ -386,6 +399,78 @@ async def face_login(face_image: UploadFile = File(...)):
             detail=f"Lỗi khi xử lý face login: {str(e)}"
         )
 
+# --- FACE RECOGNITION: Get Info User bằng khuôn mặt ---
+@app.post("/auth/face-check")
+async def face_check(face_image: UploadFile = File(...)):
+    """
+    Nhận diện khuôn mặt và chỉ trả về thông tin cá nhân cơ bản.
+    """
+    try:
+        # 🧠 Đọc ảnh upload
+        image_content = await face_image.read()
+
+        temp_filename = f"temp_check_{datetime.now().timestamp()}.jpg"
+        temp_path = os.path.join(FACE_IMAGE_DIR, temp_filename)
+
+        with open(temp_path, "wb") as f:
+            f.write(image_content)
+
+        # 🔍 Trích xuất đặc trưng khuôn mặt
+        uploaded_embeddings = face_service.extract_embeddings(temp_path)
+        if uploaded_embeddings is None:
+            raise HTTPException(status_code=400, detail="Không phát hiện được khuôn mặt trong ảnh")
+
+        # 🧩 Lấy danh sách user có embeddings
+        all_users = list(users_collection.find({"face_data.embeddings": {"$exists": True, "$ne": []}}))
+        if not all_users:
+            raise HTTPException(status_code=404, detail="Không có người dùng nào có dữ liệu khuôn mặt")
+
+        # 🔎 So khớp khuôn mặt
+        best_match = None
+        best_distance = float("inf")
+        threshold = 0.6
+
+        for user in all_users:
+            stored_embeddings = user.get("face_data", {}).get("embeddings", [])
+            if not stored_embeddings:
+                continue
+
+            distance = face_service.calculate_distance(uploaded_embeddings, stored_embeddings)
+            if distance < best_distance:
+                best_distance = distance
+                best_match = user
+
+        # 🧹 Xóa file tạm
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+        # ✅ Nếu có kết quả khớp
+        if best_match and best_distance <= threshold:
+            confidence = max(0, (1 - best_distance) * 100)
+
+            personal_info = best_match.get("personal_info", {})
+            identification = best_match.get("identification", {})
+
+            return {
+                "success": True,
+                "message": "Khuôn mặt trùng khớp",
+                "confidence": round(confidence, 2),
+                "distance": round(best_distance, 4),
+                "personal_info": personal_info,
+                "identification": identification,
+            }
+
+        raise HTTPException(
+            status_code=401,
+            detail=f"Không tìm thấy khuôn mặt khớp trong hệ thống (distance: {best_distance:.4f})",
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi khi xử lý face-check: {str(e)}")
+    
+    
 # --- FACE RECOGNITION: Verify face với user_id cụ thể ---
 @app.post("/auth/face-verify/{user_id}")
 async def face_verify(user_id: str, face_image: UploadFile = File(...)):
@@ -410,7 +495,7 @@ async def face_verify(user_id: str, face_image: UploadFile = File(...)):
         image_content = await face_image.read()
         
         # Lưu ảnh tạm
-        temp_filename = f"temp_verify_{user_id}_{datetime.utcnow().timestamp()}.jpg"
+        temp_filename = f"temp_verify_{user_id}_{datetime.now().timestamp()}.jpg"
         temp_path = os.path.join(FACE_IMAGE_DIR, temp_filename)
         
         with open(temp_path, "wb") as buffer:
@@ -441,7 +526,7 @@ async def face_verify(user_id: str, face_image: UploadFile = File(...)):
                 # Cập nhật last verification time
                 users_collection.update_one(
                     {"_id": user["_id"]},
-                    {"$set": {"system_info.last_verification": datetime.utcnow()}}
+                    {"$set": {"system_info.last_verification": datetime.now()}}
                 )
             
             return {
@@ -522,8 +607,8 @@ async def update_face_embeddings(
                         "face_data.embeddings": new_embeddings,
                         "face_data.face_image_url": face_image_url,
                         "face_data.embedding_version": embedding_version,
-                        "face_data.created_at": datetime.utcnow(),
-                        "system_info.last_updated": datetime.utcnow()
+                        "face_data.created_at": datetime.now(),
+                        "system_info.last_updated": datetime.now()
                     }
                 }
             )
@@ -595,9 +680,9 @@ async def update_user(user_id: str, user_update: UserCreate):
     
     # Cập nhật last_updated
     if "system_info" in update_data:
-        update_data["system_info"]["last_updated"] = datetime.utcnow()
+        update_data["system_info"]["last_updated"] = datetime.now()
     else:
-        update_data["system_info"] = {"last_updated": datetime.utcnow()}
+        update_data["system_info"] = {"last_updated": datetime.now()}
 
     result = users_collection.update_one(
         {"user_id": user_id}, 
@@ -672,7 +757,7 @@ async def health_check():
             "status": "healthy",
             "database": "connected",
             "face_recognition": "active",
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.now()
         }
     except Exception as e:
         raise HTTPException(
@@ -695,13 +780,60 @@ async def health_check():
                 "medical_appointments": "OK"
             },
             "face_recognition": "active",
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.now()
         }
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")
 
 
 # ==================== HOTEL BOOKING APIs ====================
+@app.post("/hotel/login")
+def login_hotel(id: str = Form(...), password: str = Form(...)):
+    hotel = hotels_collection.find_one({"id": id, "password": password})
+
+    if not hotel:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Email không tồn tại")
+
+    # So sánh mật khẩu (ở đây là dạng plain-text demo, thực tế nên dùng hash)
+    if hotel["password"] != password:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sai mật khẩu")
+
+    # Ẩn password khi trả về
+    hotel["_id"] = str(hotel["_id"])
+    if "password" in hotel:
+        del hotel["password"]
+
+    return  hotel
+    
+
+@app.get("/hotels")
+def get_hotels():
+    hotels = list(hotels_collection.find({}, {"_id": 0, 'password': 0, "created_at" : 0, "updated_at": 0}))
+    return {"count": len(hotels), "data": hotels}
+
+@app.get('/hotel/{hotel_id}', response_model = Hotel)
+async def get_hotel_by_id(hotel_id: str):
+    hotel = hotels_collection.find_one({"id": hotel_id})
+    if not hotel:
+        return HTTPException(status_code = 404, detail = "Hotel not found")
+    for field in ["password", "created_at", "updated_at"]:
+        hotel.pop(field, None)
+    return hotel
+
+@app.get("/hotel/booking/{hotel_id}", response_model=List[HotelBookingResponse])
+async def get_booking_hotel_by_id(hotel_id: str):
+    # Tìm tất cả booking có hotel_id tương ứng
+    bookings = list(hotel_bookings_collection.find({"hotel_id": hotel_id}))
+    
+    # Nếu không có booking nào
+    if not bookings:
+        raise HTTPException(status_code=404, detail="Không tìm thấy booking cho khách sạn này")
+    
+    # Convert ObjectId sang str (nếu cần)
+    for booking in bookings:
+        booking["_id"] = str(booking["_id"])
+    
+    return bookings
 
 @app.post("/hotel/bookings/", response_model=HotelBookingResponse, status_code=status.HTTP_201_CREATED)
 async def create_hotel_booking(booking_data: HotelBookingCreate):
@@ -724,6 +856,7 @@ async def create_hotel_booking(booking_data: HotelBookingCreate):
         # Tạo booking object
         booking = HotelBooking(
             user_id=booking_data.user_id,
+            hotel_id=booking_data.hotel_id,
             hotel_name=booking_data.hotel_name,
             hotel_address=booking_data.hotel_address,
             hotel_phone=booking_data.hotel_phone,
@@ -756,10 +889,10 @@ async def create_hotel_booking(booking_data: HotelBookingCreate):
 @app.post("/hotel/check-in/{booking_id}")
 async def hotel_face_check_in(booking_id: str, face_image: UploadFile = File(...)):
     """
-    Check-in khách sạn bằng khuôn mặt
+    Check-in khách sạn bằng khuôn mặt + gửi thông báo FCM
     """
     try:
-        # Tìm booking
+        # --- 1️⃣ Tìm booking ---
         booking = hotel_bookings_collection.find_one({"booking_id": booking_id})
         if not booking:
             raise HTTPException(status_code=404, detail="Booking không tồn tại")
@@ -770,7 +903,7 @@ async def hotel_face_check_in(booking_id: str, face_image: UploadFile = File(...
                 detail=f"Không thể check-in. Trạng thái hiện tại: {booking['status']}"
             )
         
-        # Lấy thông tin user
+        # --- 2️⃣ Lấy thông tin user ---
         user = users_collection.find_one({"user_id": booking["user_id"]})
         if not user:
             raise HTTPException(status_code=404, detail="User không tồn tại")
@@ -779,79 +912,106 @@ async def hotel_face_check_in(booking_id: str, face_image: UploadFile = File(...
         if not stored_embeddings:
             raise HTTPException(status_code=400, detail="User chưa có dữ liệu khuôn mặt")
         
-        # Xử lý ảnh upload
+        # --- 3️⃣ Xử lý ảnh ---
         image_content = await face_image.read()
-        temp_filename = f"temp_hotel_checkin_{booking_id}_{datetime.utcnow().timestamp()}.jpg"
+        temp_filename = f"temp_hotel_checkin_{booking_id}_{datetime.now().timestamp()}.jpg"
         temp_path = os.path.join(FACE_IMAGE_DIR, temp_filename)
         
         with open(temp_path, "wb") as buffer:
             buffer.write(image_content)
         
         try:
-            # Extract embeddings và verify
+            # --- 4️⃣ Extract embeddings và so sánh ---
             uploaded_embeddings = face_service.extract_embeddings(temp_path)
-            
             if uploaded_embeddings is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Không phát hiện được khuôn mặt trong ảnh"
-                )
+                raise HTTPException(status_code=400, detail="Không phát hiện được khuôn mặt trong ảnh")
             
-            # So sánh khuôn mặt
             distance = face_service.calculate_distance(uploaded_embeddings, stored_embeddings)
             threshold = 0.6
             is_match = distance <= threshold
             confidence = max(0, (1 - distance) * 100)
             
-            # Lưu log verification
             verification_log = {
-                "timestamp": datetime.utcnow(),
+                "timestamp": datetime.now(),
                 "action": "check_in",
                 "verified": is_match,
                 "confidence": confidence,
                 "distance": distance
             }
             
+            # --- 5️⃣ Nếu khớp khuôn mặt ---
             if is_match:
-                # Cập nhật booking
+                check_in_time = datetime.now()
+
+                # ✅ Cập nhật booking
                 hotel_bookings_collection.update_one(
                     {"booking_id": booking_id},
                     {
                         "$set": {
                             "status": "checked_in",
-                            "actual_check_in": datetime.utcnow(),
+                            "actual_check_in": check_in_time,
                             "check_in_method": "face_recognition",
                             "check_in_face_verified": True,
-                            "updated_at": datetime.utcnow()
+                            "updated_at": check_in_time
                         },
                         "$push": {
                             "face_verification_logs": verification_log
                         }
                     }
                 )
-                
+
+                # --- 6️⃣ Gửi thông báo FCM ---
+                fcm_token = user.get("fcm_token")
+                if fcm_token:
+                    hotel_name = booking.get("hotel_name", "Khách sạn của bạn")
+                    room_number = booking.get("room_info", {}).get("room_number", "N/A")
+
+                    # Format thời gian dễ đọc
+                    formatted_time = check_in_time.strftime("%H:%M %d/%m/%Y")
+
+                    # ✉️ Nội dung thông báo
+                    title = f"🏨 {hotel_name}"
+                    body = (
+                        f"Phòng: {room_number}\n"
+                        f"Thời gian check-in: {formatted_time}\n"
+                        "Cảm ơn bạn đã tin tưởng lựa chọn khách sạn của chúng tôi!"
+                    )
+
+                    send_fcm(
+                        token=fcm_token,
+                        title=title,
+                        body=body,
+                        data={
+                            "booking_id": booking_id,
+                            "hotel_name": hotel_name,
+                            "room_number": room_number,
+                            "check_in_time": formatted_time,
+                            "screen": "booking_detail"
+                        }
+                    )
+
                 return {
                     "success": True,
                     "message": "Check-in thành công",
                     "booking_id": booking_id,
                     "user_id": booking["user_id"],
-                    "hotel_name": booking["hotel_name"],
-                    "room_number": booking["room_info"]["room_number"],
-                    "check_in_time": datetime.utcnow(),
+                    "hotel_name": booking.get("hotel_name"),
+                    "room_number": booking.get("room_info", {}).get("room_number"),
+                    "check_in_time": check_in_time,
                     "confidence": round(confidence, 2)
                 }
+
+            # --- 7️⃣ Nếu không khớp ---
             else:
-                # Lưu log failed attempt
                 hotel_bookings_collection.update_one(
                     {"booking_id": booking_id},
                     {"$push": {"face_verification_logs": verification_log}}
                 )
-                
                 raise HTTPException(
                     status_code=401,
                     detail=f"Xác thực khuôn mặt thất bại (confidence: {confidence:.2f}%)"
                 )
-        
+
         finally:
             if os.path.exists(temp_path):
                 os.remove(temp_path)
@@ -861,14 +1021,13 @@ async def hotel_face_check_in(booking_id: str, face_image: UploadFile = File(...
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi check-in: {str(e)}")
 
-
 @app.post("/hotel/check-out/{booking_id}")
 async def hotel_face_check_out(booking_id: str, face_image: UploadFile = File(...)):
     """
-    Check-out khách sạn bằng khuôn mặt
+    Check-out khách sạn bằng khuôn mặt và gửi thông báo cảm ơn
     """
     try:
-        # Tương tự như check-in
+        # 1️⃣ Tìm booking
         booking = hotel_bookings_collection.find_one({"booking_id": booking_id})
         if not booking:
             raise HTTPException(status_code=404, detail="Booking không tồn tại")
@@ -878,70 +1037,107 @@ async def hotel_face_check_out(booking_id: str, face_image: UploadFile = File(..
                 status_code=400,
                 detail=f"Không thể check-out. Trạng thái hiện tại: {booking['status']}"
             )
-        
-        # Lấy user và verify face (code tương tự check-in)
+
+        # 2️⃣ Lấy thông tin user
         user = users_collection.find_one({"user_id": booking["user_id"]})
+        if not user:
+            raise HTTPException(status_code=404, detail="User không tồn tại")
+        
         stored_embeddings = user.get("face_data", {}).get("embeddings", [])
-        
-        # Process image...
+        if not stored_embeddings:
+            raise HTTPException(status_code=400, detail="User chưa có dữ liệu khuôn mặt")
+
+        # 3️⃣ Xử lý ảnh khuôn mặt
         image_content = await face_image.read()
-        temp_filename = f"temp_hotel_checkout_{booking_id}_{datetime.utcnow().timestamp()}.jpg"
+        temp_filename = f"temp_hotel_checkout_{booking_id}_{datetime.now().timestamp()}.jpg"
         temp_path = os.path.join(FACE_IMAGE_DIR, temp_filename)
-        
         with open(temp_path, "wb") as buffer:
             buffer.write(image_content)
-        
+
         try:
+            # 4️⃣ Xác thực khuôn mặt
             uploaded_embeddings = face_service.extract_embeddings(temp_path)
             if uploaded_embeddings is None:
                 raise HTTPException(status_code=400, detail="Không phát hiện được khuôn mặt")
-            
+
             distance = face_service.calculate_distance(uploaded_embeddings, stored_embeddings)
             is_match = distance <= 0.6
             confidence = max(0, (1 - distance) * 100)
-            
+
             verification_log = {
-                "timestamp": datetime.utcnow(),
+                "timestamp": datetime.now(),
                 "action": "check_out",
                 "verified": is_match,
                 "confidence": confidence,
                 "distance": distance
             }
-            
+
             if is_match:
+                check_out_time = datetime.now()
+
+                # 5️⃣ Cập nhật trạng thái booking
                 hotel_bookings_collection.update_one(
                     {"booking_id": booking_id},
                     {
                         "$set": {
                             "status": "checked_out",
-                            "actual_check_out": datetime.utcnow(),
+                            "actual_check_out": check_out_time,
                             "check_out_method": "face_recognition",
                             "check_out_face_verified": True,
-                            "updated_at": datetime.utcnow()
+                            "updated_at": check_out_time
                         },
                         "$push": {"face_verification_logs": verification_log}
                     }
                 )
-                
+
+                # 6️⃣ Gửi thông báo cảm ơn qua FCM
+                fcm_token = user.get("fcm_token")
+                if fcm_token:
+                    hotel_name = booking.get("hotel_name", "Khách sạn của bạn")
+                    room_number = booking.get("room_info", {}).get("room_number", "N/A")
+                    
+                    formatted_time = check_out_time.strftime("%H:%M %d/%m/%Y")
+                    
+                    title = f"🏨 {hotel_name}"
+                    body = (
+                        f"Phòng: {room_number}\n"
+                        f"Thời gian check-out: {formatted_time}\n"
+                        "Cảm ơn bạn đã tin tưởng lựa chọn khách sạn của chúng tôi!"
+                    )
+                    
+                    # Gửi FCM
+                    send_fcm(
+                        token=fcm_token,
+                        title=title,
+                        body=body,
+                        data={
+                            "booking_id": booking_id,
+                            "hotel_name": hotel_name,
+                            "room_number": room_number,
+                            "check_out_time": formatted_time,
+                            "screen": "booking_detail"
+                        }
+                    )
+                # 7️⃣ Phản hồi thành công
                 return {
                     "success": True,
                     "message": "Check-out thành công",
                     "booking_id": booking_id,
-                    "check_out_time": datetime.utcnow(),
+                    "check_out_time": check_out_time,
                     "confidence": round(confidence, 2)
                 }
+
             else:
                 raise HTTPException(status_code=401, detail="Xác thực khuôn mặt thất bại")
-        
+
         finally:
             if os.path.exists(temp_path):
                 os.remove(temp_path)
-    
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi check-out: {str(e)}")
-
 
 @app.get("/hotel/bookings/", response_model=List[HotelBookingResponse])
 async def get_all_hotel_bookings(skip: int = 0, limit: int = 100):
@@ -971,7 +1167,7 @@ async def cancel_hotel_booking(booking_id: str):
     """Hủy booking"""
     result = hotel_bookings_collection.update_one(
         {"booking_id": booking_id},
-        {"$set": {"status": "cancelled", "updated_at": datetime.utcnow()}}
+        {"$set": {"status": "cancelled", "updated_at": datetime.now()}}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Booking không tồn tại")
@@ -979,6 +1175,50 @@ async def cancel_hotel_booking(booking_id: str):
 
 
 # ==================== MEDICAL APPOINTMENT APIs ====================
+
+@app.post("/medicals/login")
+def login_medicals(id: str = Form(...), password: str = Form(...)):
+    hospital = hospitals_collection.find_one({"id": id, "password": password})
+    
+    if not hospital:
+        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail="Sai mật khẩu")
+    
+    hospital["_id"] = str(hospital["_id"])
+    
+    if "password" in hospital:
+        del hospital["password"]
+    
+    return hospital
+
+@app.get("/medicals")
+def get_medicals():
+    medicals = list(hospitals_collection.find({}, {"_id": 0, 'password': 0, "created_at" : 0, "updated_at": 0}))
+    return {"count": len(medicals), "data": medicals}
+
+@app.get('/medicals/{medical_id}', response_model = Hospital)
+async def get_medical_by_id(medical_id: str):
+    medical = hospitals_collection.find_one({"id": medical_id})
+    if not medical:
+        return HTTPException(status_code = 404, detail = "Medical not found")
+    for field in ["password", "created_by", "updated_at"]:
+        medical.pop(field, None)
+    return medical
+
+@app.get("/medicals/booking/{medical_id}", response_model=List[MedicalAppointmentResponse])
+async def get_booking_medical_by_id(medical_id: str):
+    # Tìm tất cả booking có medical_id tương ứng
+    bookings = list(medical_appointments_collection.find({"hospital_id": medical_id}))
+    
+    # Nếu không có booking nào
+    if not bookings:
+        raise HTTPException(status_code=404, detail="Không tìm thấy booking cho bệnh viện này")
+
+    # Convert ObjectId sang str (nếu cần)
+    for booking in bookings:
+        booking["_id"] = str(booking["_id"])
+    
+    return bookings
+
 
 @app.post("/medical/appointments/", response_model=MedicalAppointmentResponse, status_code=status.HTTP_201_CREATED)
 async def create_medical_appointment(appointment_data: MedicalAppointmentCreate):
@@ -1001,6 +1241,7 @@ async def create_medical_appointment(appointment_data: MedicalAppointmentCreate)
         # Tạo appointment object
         appointment = MedicalAppointment(
             user_id=appointment_data.user_id,
+            hospital_id=appointment_data.hospital_id,
             hospital_name=appointment_data.hospital_name,
             hospital_address=appointment_data.hospital_address,
             hospital_phone=appointment_data.hospital_phone,
@@ -1045,7 +1286,7 @@ async def medical_face_check_in(appointment_id: str, face_image: UploadFile = Fi
     Check-in khám bệnh bằng khuôn mặt
     """
     try:
-        # Tìm appointment
+        # --- 1️⃣ Tìm appointment ---
         appointment = medical_appointments_collection.find_one({"appointment_id": appointment_id})
         if not appointment:
             raise HTTPException(status_code=404, detail="Lịch khám không tồn tại")
@@ -1056,7 +1297,7 @@ async def medical_face_check_in(appointment_id: str, face_image: UploadFile = Fi
                 detail=f"Không thể check-in. Trạng thái hiện tại: {appointment['status']}"
             )
         
-        # Lấy thông tin user
+        # --- 2️⃣ Lấy thông tin user ---
         user = users_collection.find_one({"user_id": appointment["user_id"]})
         if not user:
             raise HTTPException(status_code=404, detail="User không tồn tại")
@@ -1065,33 +1306,30 @@ async def medical_face_check_in(appointment_id: str, face_image: UploadFile = Fi
         if not stored_embeddings:
             raise HTTPException(status_code=400, detail="User chưa có dữ liệu khuôn mặt")
         
-        # Xử lý ảnh upload
+        # --- 3️⃣ Xử lý ảnh upload ---
         image_content = await face_image.read()
-        temp_filename = f"temp_medical_checkin_{appointment_id}_{datetime.utcnow().timestamp()}.jpg"
+        temp_filename = f"temp_medical_checkin_{appointment_id}_{datetime.now().timestamp()}.jpg"
         temp_path = os.path.join(FACE_IMAGE_DIR, temp_filename)
         
         with open(temp_path, "wb") as buffer:
             buffer.write(image_content)
         
         try:
-            # Extract embeddings và verify
+            # --- 4️⃣ Extract embeddings và verify ---
             uploaded_embeddings = face_service.extract_embeddings(temp_path)
-            
             if uploaded_embeddings is None:
                 raise HTTPException(
                     status_code=400,
                     detail="Không phát hiện được khuôn mặt trong ảnh"
                 )
             
-            # So sánh khuôn mặt
             distance = face_service.calculate_distance(uploaded_embeddings, stored_embeddings)
             threshold = 0.6
             is_match = distance <= threshold
             confidence = max(0, (1 - distance) * 100)
             
-            # Lưu log verification
             verification_log = {
-                "timestamp": datetime.utcnow(),
+                "timestamp": datetime.now(),
                 "action": "medical_check_in",
                 "verified": is_match,
                 "confidence": confidence,
@@ -1099,23 +1337,57 @@ async def medical_face_check_in(appointment_id: str, face_image: UploadFile = Fi
             }
             
             if is_match:
-                # Cập nhật appointment
+                check_in_time = datetime.now()
+
+                # --- 5️⃣ Cập nhật appointment ---
                 medical_appointments_collection.update_one(
                     {"appointment_id": appointment_id},
                     {
                         "$set": {
                             "status": "checked_in",
-                            "actual_check_in": datetime.utcnow(),
+                            "actual_check_in": check_in_time,
                             "check_in_method": "face_recognition",
                             "check_in_face_verified": True,
-                            "updated_at": datetime.utcnow()
+                            "updated_at": check_in_time
                         },
-                        "$push": {
-                            "face_verification_logs": verification_log
-                        }
+                        "$push": {"face_verification_logs": verification_log}
                     }
                 )
-                
+
+                # --- 6️⃣ Gửi thông báo FCM ---
+                fcm_token = user.get("fcm_token")
+                if fcm_token:
+                    hospital_name = appointment.get("hospital_name", "Cơ sở y tế")
+                    department = appointment.get("department", "Khoa khám bệnh")
+                    doctor = appointment.get("doctor_info", {}).get("doctor_name", "Bác sĩ phụ trách")
+                    patient_name = user.get("personal_info", {}).get("full_name", "Quý bệnh nhân")
+                    formatted_time = check_in_time.strftime("%H:%M %d/%m/%Y")
+
+                    # ✉️ Nội dung thông báo
+                    title = f"🏥 {hospital_name}"
+                    body = (
+                        f"Bệnh nhân: {patient_name}\n"
+                        f"Khoa: {department}\n"
+                        f"Bác sĩ: {doctor}\n"
+                        f"Check-in lúc: {formatted_time}\n"
+                        "Cảm ơn bạn đã đến khám, chúc bạn mau khỏe!"
+                    )
+
+                    send_fcm(
+                        token=fcm_token,
+                        title=title,
+                        body=body,
+                        data={
+                            "appointment_id": appointment_id,
+                            "hospital_name": hospital_name,
+                            "department": department,
+                            "doctor": doctor,
+                            "check_in_time": formatted_time,
+                            "screen": "appointment_detail"
+                        }
+                    )
+
+                # --- 7️⃣ Phản hồi ---
                 return {
                     "success": True,
                     "message": "Check-in khám bệnh thành công",
@@ -1125,18 +1397,18 @@ async def medical_face_check_in(appointment_id: str, face_image: UploadFile = Fi
                     "hospital_name": appointment["hospital_name"],
                     "department": appointment["department"],
                     "doctor": appointment.get("doctor_info", {}).get("doctor_name", "Chưa xác định"),
-                    "check_in_time": datetime.utcnow(),
+                    "check_in_time": check_in_time,
                     "appointment_time": appointment["appointment_time"],
                     "is_emergency": appointment.get("is_emergency", False),
                     "confidence": round(confidence, 2)
                 }
+
             else:
-                # Lưu log failed attempt
+                # --- 8️⃣ Trường hợp khuôn mặt không khớp ---
                 medical_appointments_collection.update_one(
                     {"appointment_id": appointment_id},
                     {"$push": {"face_verification_logs": verification_log}}
                 )
-                
                 raise HTTPException(
                     status_code=401,
                     detail=f"Xác thực khuôn mặt thất bại (confidence: {confidence:.2f}%)"
@@ -1150,7 +1422,6 @@ async def medical_face_check_in(appointment_id: str, face_image: UploadFile = Fi
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi check-in: {str(e)}")
-
 
 @app.put("/medical/appointments/{appointment_id}/complete")
 async def complete_medical_appointment(
@@ -1203,7 +1474,7 @@ async def complete_medical_appointment(
             "doctor_notes": doctor_notes,
             "additional_costs": additional_costs,
             "total_cost": total_cost,
-            "updated_at": datetime.utcnow()
+            "updated_at": datetime.now()
         }
         
         if next_apt_date:
@@ -1272,7 +1543,7 @@ async def cancel_medical_appointment(appointment_id: str, reason: Optional[str] 
             "$set": {
                 "status": "cancelled",
                 "notes": f"Cancelled: {reason}",
-                "updated_at": datetime.utcnow()
+                "updated_at": datetime.now()
             }
         }
     )
@@ -1284,7 +1555,7 @@ async def cancel_medical_appointment(appointment_id: str, reason: Optional[str] 
 @app.get("/medical/appointments/today/emergency")
 async def get_today_emergency_appointments():
     """Lấy các ca cấp cứu hôm nay"""
-    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
     
     appointments = list(medical_appointments_collection.find({
@@ -1318,8 +1589,8 @@ async def get_dashboard_stats():
         total_appointments = medical_appointments_collection.count_documents({})
         today_appointments = medical_appointments_collection.count_documents({
             "appointment_date": {
-                "$gte": datetime.utcnow().replace(hour=0, minute=0, second=0),
-                "$lt": datetime.utcnow().replace(hour=23, minute=59, second=59)
+                "$gte": datetime.now().replace(hour=0, minute=0, second=0),
+                "$lt": datetime.now().replace(hour=23, minute=59, second=59)
             }
         })
         emergency_cases = medical_appointments_collection.count_documents({
@@ -1328,7 +1599,7 @@ async def get_dashboard_stats():
         })
         
         return {
-            "timestamp": datetime.utcnow(),
+            "timestamp": datetime.now(),
             "users": {
                 "total": total_users,
                 "active": active_users
