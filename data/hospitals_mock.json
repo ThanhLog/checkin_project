@@ -1,0 +1,253 @@
+[
+  {
+    "id": "HOSP-0001",
+    "name": "Bệnh viện Bạch Mai",
+    "password": "bachmai@2025",
+    "address": "78 Giải Phóng, Phương Mai, Đống Đa, Hà Nội",
+    "phone": "024 3869 3731",
+    "email": "info@bachmai.gov.vn",
+    "website": "https://bachmai.gov.vn",
+    "established_year": 1911,
+    "departments": [
+      {
+        "department_id": "BM-DP-01",
+        "department_name": "Khoa Cấp Cứu",
+        "description": "Tiếp nhận và điều trị các ca cấp cứu khẩn cấp.",
+        "phone": "024 3869 1111",
+        "head_doctor": "BS. Nguyễn Văn An"
+      },
+      {
+        "department_id": "BM-DP-02",
+        "department_name": "Khoa Tim Mạch",
+        "description": "Khám và điều trị các bệnh lý về tim mạch.",
+        "phone": "024 3869 2222",
+        "head_doctor": "BS. Trần Thị Hạnh"
+      },
+      {
+        "department_id": "BM-DP-03",
+        "department_name": "Khoa Nội Tổng Hợp",
+        "description": "Chẩn đoán và điều trị các bệnh nội khoa đa dạng.",
+        "phone": "024 3869 3333",
+        "head_doctor": "BS. Lê Quang Minh"
+      }
+    ],
+    "doctors": [
+      {
+        "doctor_id": "BM-DR-001",
+        "doctor_name": "Nguyễn Văn An",
+        "specialization": "Cấp cứu",
+        "department": "Khoa Cấp Cứu",
+        "phone": "0912345678"
+      },
+      {
+        "doctor_id": "BM-DR-002",
+        "doctor_name": "Trần Thị Hạnh",
+        "specialization": "Tim mạch",
+        "department": "Khoa Tim Mạch",
+        "phone": "0912345679"
+      },
+      {
+        "doctor_id": "BM-DR-003",
+        "doctor_name": "Lê Quang Minh",
+        "specialization": "Nội tổng hợp",
+        "department": "Khoa Nội Tổng Hợp",
+        "phone": "0912345680"
+      }
+    ],
+    "total_beds": 1500,
+    "available_beds": 230,
+    "rating": 4.7,
+    "active": true,
+    "last_inspection": "2025-05-20T00:00:00Z",
+    "accreditation_status": "Đạt chuẩn cấp Bộ Y tế",
+    "created_at": "2025-10-21T00:00:00Z",
+    "updated_at": "2025-10-21T00:00:00Z",
+    "created_by": "system",
+    "notes": "Bệnh viện đầu ngành khu vực miền Bắc."
+  },
+  {
+    "id": "HOSP-0002",
+    "name": "Bệnh viện Trung Ương Huế",
+    "password": "hue@2025",
+    "address": "16 Lê Lợi, Vĩnh Ninh, Thành phố Huế",
+    "phone": "0234 3822 325",
+    "email": "contact@bvtwhue.gov.vn",
+    "website": "https://bvtwhue.gov.vn",
+    "established_year": 1894,
+    "departments": [
+      {
+        "department_id": "HUE-DP-01",
+        "department_name": "Khoa Ngoại Tổng Hợp",
+        "description": "Phẫu thuật tổng quát, tiêu hóa, gan mật.",
+        "phone": "0234 3822 400",
+        "head_doctor": "BS. Nguyễn Đức Tâm"
+      },
+      {
+        "department_id": "HUE-DP-02",
+        "department_name": "Khoa Nhi",
+        "description": "Khám và điều trị bệnh nhi.",
+        "phone": "0234 3822 401",
+        "head_doctor": "BS. Trần Bảo Ngọc"
+      }
+    ],
+    "doctors": [
+      {
+        "doctor_id": "HUE-DR-001",
+        "doctor_name": "Nguyễn Đức Tâm",
+        "specialization": "Ngoại tổng hợp",
+        "department": "Khoa Ngoại Tổng Hợp",
+        "phone": "0935667788"
+      },
+      {
+        "doctor_id": "HUE-DR-002",
+        "doctor_name": "Trần Bảo Ngọc",
+        "specialization": "Nhi khoa",
+        "department": "Khoa Nhi",
+        "phone": "0935667799"
+      }
+    ],
+    "total_beds": 1200,
+    "available_beds": 180,
+    "rating": 4.5,
+    "active": true,
+    "last_inspection": "2025-06-10T00:00:00Z",
+    "accreditation_status": "Đạt chuẩn quốc gia",
+    "created_by": "system"
+  },
+  {
+    "id": "HOSP-0003",
+    "name": "Bệnh viện Chợ Rẫy",
+    "password": "choray@2025",
+    "address": "201B Nguyễn Chí Thanh, Phường 12, Quận 5, TP. Hồ Chí Minh",
+    "phone": "028 3855 4137",
+    "email": "info@choray.vn",
+    "website": "https://choray.vn",
+    "established_year": 1900,
+    "departments": [
+      {
+        "department_id": "CR-DP-01",
+        "department_name": "Khoa Hồi Sức Tích Cực",
+        "description": "Điều trị bệnh nhân nặng cần theo dõi đặc biệt.",
+        "phone": "028 3855 5001",
+        "head_doctor": "BS. Phan Văn Thịnh"
+      },
+      {
+        "department_id": "CR-DP-02",
+        "department_name": "Khoa Ung Bướu",
+        "description": "Chẩn đoán và điều trị ung thư.",
+        "phone": "028 3855 5002",
+        "head_doctor": "BS. Đỗ Thị Mai"
+      }
+    ],
+    "doctors": [
+      {
+        "doctor_id": "CR-DR-001",
+        "doctor_name": "Phan Văn Thịnh",
+        "specialization": "Hồi sức cấp cứu",
+        "department": "Khoa Hồi Sức Tích Cực",
+        "phone": "0909990001"
+      },
+      {
+        "doctor_id": "CR-DR-002",
+        "doctor_name": "Đỗ Thị Mai",
+        "specialization": "Ung bướu",
+        "department": "Khoa Ung Bướu",
+        "phone": "0909990002"
+      }
+    ],
+    "total_beds": 1800,
+    "available_beds": 300,
+    "rating": 4.8,
+    "accreditation_status": "Đạt chuẩn quốc tế"
+  },
+  {
+    "id": "HOSP-0004",
+    "name": "Bệnh viện Đa khoa Đà Nẵng",
+    "password": "danang@2025",
+    "address": "124 Hải Phòng, Thạch Thang, Hải Châu, Đà Nẵng",
+    "phone": "0236 3821 118",
+    "email": "contact@bvdkdanang.vn",
+    "website": "https://bvdkdanang.vn",
+    "established_year": 1976,
+    "departments": [
+      {
+        "department_id": "DN-DP-01",
+        "department_name": "Khoa Sản",
+        "description": "Khám và điều trị bệnh phụ khoa, sản khoa.",
+        "phone": "0236 3821 200",
+        "head_doctor": "BS. Phạm Ngọc Hà"
+      },
+      {
+        "department_id": "DN-DP-02",
+        "department_name": "Khoa Nội Tiêu Hóa",
+        "description": "Điều trị bệnh về tiêu hóa và gan mật.",
+        "phone": "0236 3821 201",
+        "head_doctor": "BS. Vũ Minh Tuấn"
+      }
+    ],
+    "doctors": [
+      {
+        "doctor_id": "DN-DR-001",
+        "doctor_name": "Phạm Ngọc Hà",
+        "specialization": "Sản phụ khoa",
+        "department": "Khoa Sản",
+        "phone": "0905667788"
+      },
+      {
+        "doctor_id": "DN-DR-002",
+        "doctor_name": "Vũ Minh Tuấn",
+        "specialization": "Nội tiêu hóa",
+        "department": "Khoa Nội Tiêu Hóa",
+        "phone": "0905667799"
+      }
+    ],
+    "total_beds": 900,
+    "available_beds": 150,
+    "rating": 4.6
+  },
+  {
+    "id": "HOSP-0005",
+    "name": "Bệnh viện Phạm Ngọc Thạch",
+    "password": "pnt@2025",
+    "address": "120 Hồng Bàng, Phường 12, Quận 5, TP. Hồ Chí Minh",
+    "phone": "028 3855 2004",
+    "email": "info@bvphamngocthach.vn",
+    "website": "https://bvphamngocthach.vn",
+    "established_year": 1989,
+    "departments": [
+      {
+        "department_id": "PNT-DP-01",
+        "department_name": "Khoa Lao Phổi",
+        "description": "Điều trị bệnh lao và các bệnh lý hô hấp mãn tính.",
+        "phone": "028 3855 2100",
+        "head_doctor": "BS. Nguyễn Hữu Hạnh"
+      },
+      {
+        "department_id": "PNT-DP-02",
+        "department_name": "Khoa Xét Nghiệm",
+        "description": "Thực hiện xét nghiệm sinh hóa, huyết học, vi sinh.",
+        "phone": "028 3855 2200",
+        "head_doctor": "BS. Phan Thanh Mai"
+      }
+    ],
+    "doctors": [
+      {
+        "doctor_id": "PNT-DR-001",
+        "doctor_name": "Nguyễn Hữu Hạnh",
+        "specialization": "Hô hấp",
+        "department": "Khoa Lao Phổi",
+        "phone": "0911223344"
+      },
+      {
+        "doctor_id": "PNT-DR-002",
+        "doctor_name": "Phan Thanh Mai",
+        "specialization": "Xét nghiệm",
+        "department": "Khoa Xét Nghiệm",
+        "phone": "0911223355"
+      }
+    ],
+    "total_beds": 700,
+    "available_beds": 100,
+    "rating": 4.4
+  }
+]

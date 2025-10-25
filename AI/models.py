@@ -2,8 +2,10 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Any
 from datetime import datetime
 from bson import ObjectId
+from pydantic.networks import EmailStr
 from pydantic_core import core_schema
 from pydantic import GetJsonSchemaHandler
+from pydantic import BaseModel, EmailStr
 
 # Custom ObjectId cho Pydantic v2
 class PyObjectId(ObjectId):
@@ -74,6 +76,7 @@ class CheckinSettings(BaseModel):
 # Model cho request tạo user
 class UserCreate(BaseModel):
     user_id: str
+    fcm_token: str
     personal_info: Optional[PersonalInfo] = PersonalInfo(full_name="")
     identification: Optional[Identification] = Identification()
     face_data: Optional[FaceData] = FaceData()
@@ -85,6 +88,7 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: str
+    fcm_token: str
     personal_info: PersonalInfo
     identification: Identification
     face_data: FaceData
@@ -99,15 +103,28 @@ class UserResponse(BaseModel):
 
 
 
-# ==================== HOTEL BOOKING MODELS ====================
+# ==================== HOTEL MODELS ====================
 
 class RoomInfo(BaseModel):
-    room_number: str
-    room_type: str  # "standard", "deluxe", "suite", "presidential"
-    floor: Optional[int] = None
-    bed_type: Optional[str] = "double"  # "single", "double", "queen", "king"
-    max_guests: int = 2
-    price_per_night: float = 0.0
+    room_number: str = Field(..., description="Số phòng, ví dụ: 101, 202A")
+    room_type: str = Field(..., description="Loại phòng: standard, deluxe, suite, presidential")
+    floor: Optional[int] = Field(None, description="Tầng của phòng")
+    bed_type: Optional[str] = Field(default="double", description="Loại giường: single, double, queen, king")
+    max_guests: int = Field(default=2, description="Số lượng khách tối đa")
+    price_per_night: float = Field(default=0.0, description="Giá mỗi đêm")
+    available: bool = Field(default=True, description="Phòng còn trống hay không")
+
+
+class Hotel(BaseModel):
+    id: str = Field(..., description="Mã định danh khách sạn, ví dụ: APPT-2001")
+    name: str = Field(..., description="Tên khách sạn")
+    password: str = Field(..., description="Mật khẩu đăng nhập hệ thống")
+    address: Optional[str] = Field(None, description="Địa chỉ khách sạn")
+    phone: Optional[str] = Field(None, description="Số điện thoại liên hệ")
+    email: Optional[str] = Field(None, description="Email liên hệ")
+    star_rating: Optional[int] = Field(default=3, ge=1, le=5, description="Số sao của khách sạn (1-5)")
+    rooms: List[RoomInfo] = Field(default_factory=list, description="Danh sách các phòng trong khách sạn")
+    active: bool = Field(default=True, description="Trạng thái hoạt động của khách sạn")
 
 class HotelBooking(BaseModel):
     """Model cho đăng ký khách sạn"""
@@ -115,6 +132,7 @@ class HotelBooking(BaseModel):
     user_id: str  # Link với User
     
     # Thông tin khách sạn
+    hotel_id: str
     hotel_name: str
     hotel_address: Optional[str] = ""
     hotel_phone: Optional[str] = ""
@@ -158,6 +176,7 @@ class HotelBooking(BaseModel):
 class HotelBookingCreate(BaseModel):
     """Request model để tạo booking mới"""
     user_id: str
+    hotel_id: str
     hotel_name: str
     hotel_address: Optional[str] = ""
     hotel_phone: Optional[str] = ""
@@ -176,11 +195,13 @@ class HotelBookingResponse(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     booking_id: str
     user_id: str
+    hotel_id: str
     hotel_name: str
     room_info: RoomInfo
     check_in_date: datetime
     check_out_date: datetime
     actual_check_in: Optional[datetime] = None
+    check_in_method: Optional[str] = None
     actual_check_out: Optional[datetime] = None
     status: str
     payment_status: str
@@ -195,7 +216,49 @@ class HotelBookingResponse(BaseModel):
         json_encoders = {ObjectId: str}
 
 
-# ==================== MEDICAL APPOINTMENT MODELS ====================
+# ==================== MEDICAL MODELS ====================
+
+class DepartmentInfo(BaseModel):
+    """Thông tin khoa / phòng ban"""
+    department_id: str
+    department_name: str
+    description: Optional[str] = ""
+    phone: Optional[str] = ""
+    head_doctor: Optional[str] = ""  # ID hoặc tên bác sĩ trưởng khoa
+
+class Hospital(BaseModel):
+    """Model đại diện cho 1 bệnh viện hoặc cơ sở y tế"""
+    id: str = Field(..., description="Mã bệnh viện, ví dụ: APPT-1001")
+    name: str = Field(..., description="Tên bệnh viện")
+    password: Optional[str] = Field(None, description="Mật khẩu đăng nhập hệ thống")
+    
+    # Thông tin cơ bản
+    address: Optional[str] = ""
+    phone: Optional[str] = ""
+    email: Optional[EmailStr] = None
+    website: Optional[str] = None
+    established_year: Optional[int] = None
+    
+    # Cấu trúc tổ chức
+    departments: List[DepartmentInfo] = Field(default_factory=list, description="Danh sách các khoa / phòng")
+    doctors: List["DoctorInfo"] = Field(default_factory=list, description="Danh sách bác sĩ làm việc trong bệnh viện")
+    
+    # Cơ sở vật chất
+    total_beds: Optional[int] = 0
+    available_beds: Optional[int] = 0
+    rating: Optional[float] = Field(default=0.0, ge=0, le=5, description="Đánh giá trung bình của bệnh viện")
+    
+    # Trạng thái hoạt động
+    active: bool = True
+    last_inspection: Optional[datetime] = None
+    accreditation_status: Optional[str] = "Đạt"
+    
+    # Metadata
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    created_by: Optional[str] = "system"
+    notes: Optional[str] = ""
+
 
 class DoctorInfo(BaseModel):
     doctor_id: str
@@ -217,6 +280,7 @@ class MedicalAppointment(BaseModel):
     user_id: str  # Link với User
     
     # Thông tin bệnh viện/phòng khám
+    hospital_id: str
     hospital_name: str
     hospital_address: Optional[str] = ""
     hospital_phone: Optional[str] = ""
@@ -275,6 +339,7 @@ class MedicalAppointment(BaseModel):
 class MedicalAppointmentCreate(BaseModel):
     """Request model để tạo appointment mới"""
     user_id: str
+    hospital_id: str
     hospital_name: str
     hospital_address: Optional[str] = ""
     hospital_phone: Optional[str] = ""
@@ -316,3 +381,6 @@ class MedicalAppointmentResponse(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+        
+        
+        

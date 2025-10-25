@@ -13,14 +13,13 @@ const api = axios.create({
 });
 
 // =============================
-// 🏨 GET all hotel bookings
+// 🏨 GET hotel bookings by id
 // =============================
-export const getHotelBookings = async (
-  _skip = 0,
-  _limit = 100
+export const getHotelBookingsById = async (
+  hotelId: String
 ): Promise<HotelBookingModel[]> => {
   try {
-    const res = await api.get(`/hotel/bookings/?skip=0&limit=100`);
+    const res = await api.get(`/hotel/booking/${hotelId}`);
     console.log("✅ API response:", res.data);
     return res.data as HotelBookingModel[];
   } catch (error: any) {
@@ -29,6 +28,32 @@ export const getHotelBookings = async (
       console.error("🔍 Response data:", error.response.data);
     }
     return [];
+  }
+};
+
+// =============================
+// 🔐 POST hotel login
+// =============================
+export const hotelLogin = async (id: string, password: string) => {
+  try {
+    const formData = new URLSearchParams();
+    formData.append("id", id);
+    formData.append("password", password);
+
+    const res = await api.post("/hotel/login", formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    console.log("✅ Login success:", res.data);
+    return res.data;
+  } catch (error: any) {
+    console.error("❌ Login error:", error.message);
+    if (error.response) {
+      console.error("🔍 Response data:", error.response.data);
+    }
+    throw error;
   }
 };
 
@@ -62,7 +87,6 @@ export const checkInWithFace = async (
     throw new Error(message);
   }
 };
-
 
 // =============================
 // 📸 POST check-in bằng khuôn mặt
